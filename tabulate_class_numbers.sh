@@ -1,0 +1,209 @@
+#!/bin/bash
+
+CC="clang"
+
+# Make sure that discriminant_bound is divisible by 15*2^27
+discriminant_bound=2013265920 # = 15*2^27
+number_of_files=32
+bundle=256
+bound_on_coefficients=1000000
+folder="/Users/antonmosunov/Desktop/test"
+
+set -x
+
+#0. Compile all the files
+$CC -fopenmp -lflint *.c -L/usr/local/lib -I/usr/local/include -o polymult
+cd post-processing
+$CC -fopenmp sum.c -o sum
+$CC -fopenmp merge.c -o merge
+$CC -fopenmp divide.c -o divide
+$CC replace.c -o replace
+cd ..
+
+
+
+
+
+#1. Generating the polynomial sum H(120k+23)q^k 
+polynomial_degree=$((discriminant_bound/120))
+
+    #1.1 Generating the first summand
+summand1_name="h23mod120summand1."
+./polymult $polynomial_degree $number_of_files $bundle $bound_on_coefficients $summand1_name $folder   1 0 1 1 3   2 0 2 2 15   1 0 2 1 3   2 1 2 8 15   1 0 2 1 3   2 1 2 7 15   1 0 2 2 3   2 3 2 13 15   1 0 2 2 3   2 3 6 4 5   1 0 6 1 1   1 0 6 1 5   1 0 6 0 1
+
+    #1.2 Generating the second summand
+summand2_name="h23mod120summand2."
+./polymult $polynomial_degree $number_of_files $bundle $bound_on_coefficients $summand2_name $folder   1 0 3 1 1   2 1 2 2 15   1 0 6 1 1   2 2 2 8 15   1 0 6 1 1   1 1 2 7 15   1 0 6 0 1   1 3 2 13 15   1 0 6 0 1
+
+    #1.3 Adding the two polynomials
+result_name="h23mod120."
+output="$folder/$result_name"
+input1="$folder/$summand1_name"
+input2="$folder/$summand2_name"
+./post-processing/sum $number_of_files $output $input1 $input2
+
+    #1.4 Deleting temporary files
+rm "$folder/$summand1_name"*
+rm "$folder/$summand2_name"*
+
+
+
+
+
+#2. Generating the polynomial sum H(120k+47)q^k
+
+    #2.1 Generating the first summand
+summand1_name="h47mod120summand1."
+./polymult $polynomial_degree $number_of_files $bundle $bound_on_coefficients $summand1_name $folder   1 0 1 1 3   2 0 2 4 15   1 0 2 1 3   2 3 2 14 15   1 0 2 1 3   2 0 2 1 15   1 0 2 2 3   2 2 2 11 15   1 0 2 2 3   2 1 6 2 5   1 0 6 1 1   1 1 6 3 5   1 0 6 0 1
+
+    #2.2 Generating the second summand
+summand2_name="h47mod120summand2."
+./polymult $polynomial_degree $number_of_files $bundle $bound_on_coefficients $summand2_name $folder   1 0 3 1 1   2 1 2 4 15   1 0 6 1 1   2 4 2 14 15   1 0 6 1 1   1 0 2 1 15   1 0 6 0 1   1 2 2 11 15   1 0 6 0 1
+
+    #2.3 Adding the two polynomials
+result_name="h47mod120."
+output="$folder/$result_name"
+input1="$folder/$summand1_name"
+input2="$folder/$summand2_name"
+./post-processing/sum $number_of_files $output $input1 $input2
+
+    #2.4 Deleting temporary files
+rm "$folder/$summand1_name"*
+rm "$folder/$summand2_name"*
+
+
+
+
+
+#3. Generating the polynomial sum H(120k+95)q^k
+
+    #3.1 Generating the first summand
+summand1_name="h95mod120summand1."
+./polymult $polynomial_degree $number_of_files $bundle $bound_on_coefficients $summand1_name $folder   2 0 1 1 3   2 1 10 2 3   1 0 2 1 3   2 0 10 1 3   1 0 2 2 3   1 0 30 0 1   1 0 6 1 1   1 3 30 1 1   1 0 6 0 1
+
+    #3.2 Generating the second summand
+summand2_name="h95mod120summand2."
+./polymult $polynomial_degree $number_of_files $bundle $bound_on_coefficients $summand2_name $folder   2 0 3 1 1   2 2 10 2 3   1 0 6 1 1   1 0 10 1 3   1 0 6 0 1
+
+    #3.3 Adding the two polynomials
+result_name="h95mod120."
+output="$folder/$result_name"
+input1="$folder/$summand1_name"
+input2="$folder/$summand2_name"
+./post-processing/sum $number_of_files $output $input1 $input2
+
+    #3.4 Deleting temporary files
+rm "$folder/$summand1_name"*
+rm "$folder/$summand2_name"*
+
+
+
+
+
+#4. Producing the file containing H(24k+23) (0s are recorded for 71 (mod 120) and 119 (mod 120)) and deleting all files containing mod 120 data
+./post-processing/merge $folder $number_of_files 23 24 120
+result_name="h23mod120."
+rm "$folder/$result_name"*
+result_name="h47mod120."
+rm "$folder/$result_name"*
+result_name="h95mod120."
+rm "$folder/$result_name"*
+
+
+
+
+
+#5. Generating the polynomial sum H(24k+7)q^k
+
+    #5.1 Generating the polynomial 2*sum H(24k+7)q^k
+polynomial_degree=$((discriminant_bound/24))
+temp_name="h7mod24temp."
+./polymult $polynomial_degree $number_of_files $bundle $bound_on_coefficients $temp_name $folder   1 0 1 1 1   1 0 1 1 3   1 0 1 1 1   1 0 4 1 3   1 0 4 0 1   2 1 4 2 3   1 0 4 1 1
+
+    #5.2 Dividing by 2
+result_name="h7mod24."
+output="$folder/$result_name"
+input="$folder/$temp_name"
+./post-processing/divide $number_of_files $output $input 2
+
+    #5.3 Deleting temporary files
+rm "$folder/$temp_name"*
+
+
+
+
+
+#6. Generating the polynomial sum H(24k+15)q^k
+result_name="h15mod24."
+./polymult $polynomial_degree $number_of_files $bundle $bound_on_coefficients $result_name $folder   1 0 1 1 1   1 0 3 1 1   1 0 1 1 1   1 1 12 1 1   1 0 4 0 1   1 0 12 0 1   1 0 4 1 1
+
+
+
+
+
+#7. Producing the file containing H(8k+7) (0s are recorded for 71 (mod 120) and 119 (mod 120)) and deleting all files containing mod 24 data
+./post-processing/merge $folder $number_of_files 7 8 24
+result_name="h7mod24."
+rm "$folder/$result_name"*
+result_name="h15mod24."
+rm "$folder/$result_name"*
+result_name="h23mod24."
+rm "$folder/$result_name"*
+
+
+
+
+
+#8. Generating the polynomial sum H(16k+4)q^k
+polynomial_degree=$((discriminant_bound/16))
+
+    #8.1 Generating the polynomial 2*sum H(16k+4)q^k
+temp_name="h4mod16temp."
+./polymult $polynomial_degree $number_of_files $bundle $bound_on_coefficients $temp_name $folder 1 0 2 1 1   1 0 2 0 1   1 0 2 0 1
+
+    #8.2 Dividing by 2
+result_name="h4mod16."
+output="$folder/$result_name"
+input="$folder/$temp_name"
+./post-processing/divide $number_of_files $output $input 2
+
+    #8.3 Replacing the 0th entry in h4mod16.0 with 1 (because Q(sqrt(-4)) has non-trivial automorphisms)
+input="$folder/$result_name"
+input+="0"
+./post-processing/replace $input 0 1 
+
+    #8.4 Deleting temporary files
+rm "$folder/$temp_name"*
+
+
+
+
+
+#9. Generating the polynomial sum H(16k+8)q^k
+result_name="h8mod16."
+./polymult $polynomial_degree $number_of_files $bundle $bound_on_coefficients $result_name $folder 1 0 2 0 1   1 0 2 1 1   1 0 2 1 1
+
+
+
+
+
+#10. Generating the polynomial sum H(8k+3)q^k
+polynomial_degree=$((discriminant_bound/8))
+
+    #10.1 Generating the polynomial 3*sum H(8k+3)q^k
+temp_name="h3mod8temp."
+./polymult $polynomial_degree $number_of_files $bundle $bound_on_coefficients $temp_name $folder 1 0 1 1 1   1 0 1 1 1   1 0 1 1 1
+
+    #10.2 Dividing by 3
+result_name="h3mod8."
+output="$folder/$result_name"
+input="$folder/$temp_name"
+./post-processing/divide $number_of_files $output $input 3
+
+    #10.3 Replacing the 0th entry in h3mod8.0 with 1 (because Q(sqrt(-3)) has non-trivial automorphisms)
+input="$folder/$result_name"
+input+="0"
+./post-processing/replace $input 0 1 
+
+    #10.4 Deleting temporary files
+rm "$folder/$temp_name"*

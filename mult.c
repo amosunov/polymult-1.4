@@ -19,7 +19,7 @@
 =============================================================================*/
 /******************************************************************************
 
-    Copyright (C) 2021 Anton Mosunov
+    Copyright (C) 2026 Anton Mosunov
  
 ******************************************************************************/
 
@@ -232,7 +232,7 @@ void init_files(const ulong * primes, const uint total_primes,
 
 		if (fd1 == -1)
 		{
-			printf(name);
+			printf("%s", name);
 			printf("\n");
 			perror("In init_files: unable to open a file for writing.\n");
 			exit(1);
@@ -374,7 +374,7 @@ void ooc_multiply(	const ulong * primes, const uint total_primes,
 
 			mod.n = prime;
 			mod.ninv = n_preinvert_limb(prime);
-			count_leading_zeros(mod.norm, prime);
+			mod.norm = flint_clz(prime);
 
 			fp[n]->mod = mod;
 			fp[n]->length = length;
@@ -544,7 +544,7 @@ void ooc_square(	const ulong * primes, const uint total_primes,
 
 			mod.n = prime;
 			mod.ninv = n_preinvert_limb(prime);
-			count_leading_zeros(mod.norm, prime);
+			mod.norm = flint_clz(prime);
 
 			fp[n]->length = length;
 

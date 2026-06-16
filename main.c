@@ -19,7 +19,7 @@
 =============================================================================*/
 /******************************************************************************
 
-    Copyright (C) 2021 Anton Mosunov
+    Copyright (C) 2026 Anton Mosunov
  
 ******************************************************************************/
 
@@ -37,21 +37,21 @@
 #define ulong unsigned long
 #endif
 
+#define SIZE 100
+#define LOWER_BOUND 0
+
 int main(int argc, char * argv[])
 {
-
-	//omp_set_num_threads(4);
-
-	if ((argc < 22) || (argc % 5 != 2))
+	if ((argc < 22) || (argc % 10 != 2))
 	{
-		printf("Format: ./polymult [limit] [files] [bundle] [bound] [resultname] [folder] [c0] [r0] [s0] [a0] [m0] [c1] [r1] [s1] [a1] [m1] ...\n");
+		printf("Format: ./polymult [polynomial_degree] [number_of_files] [bundle] [bound] [resultname] [folder] [c0] [r0] [s0] [a0] [m0] [c1] [r1] [s1] [a1] [m1] ...\n");
 		exit(1);
 	}
 
 	const int series_total = (argc - 7)/5;
 	ulong * series_params = malloc(sizeof(ulong) * series_total * 5);	
 
-	printf("series_total = %lu\n", series_total);
+	printf("Total series: %d\n", series_total);
 
 	for (int i = 0; i < series_total; i++)
 	{
