@@ -29,6 +29,8 @@ cd ..
 
 
 #1. Generating the polynomial sum H(120k+23)q^k 
+date
+
 polynomial_degree=$((discriminant_bound/120))
 
     #1.1 Generating the first summand
@@ -55,6 +57,7 @@ input2="$folder/$summand2_name"
 
 
 #2. Generating the polynomial sum H(120k+47)q^k
+date
 
     #2.1 Generating the first summand
 summand1_name="h47mod120summand1."
@@ -80,6 +83,7 @@ input2="$folder/$summand2_name"
 
 
 #3. Generating the polynomial sum H(120k+95)q^k
+date
 
     #3.1 Generating the first summand
 summand1_name="h95mod120summand1."
@@ -105,6 +109,8 @@ input2="$folder/$summand2_name"
 
 
 #4. Producing the file containing H(24k+23) (0s are recorded for 71 (mod 120) and 119 (mod 120)) and deleting all files containing mod 120 data
+date
+
 ./post-processing/merge $folder $number_of_files 23 24 120
 # result_name="h23mod120."
 # rm "$folder/$result_name"*
@@ -118,6 +124,7 @@ input2="$folder/$summand2_name"
 
 
 #5. Generating the polynomial sum H(24k+7)q^k
+date
 
     #5.1 Generating the polynomial 2*sum H(24k+7)q^k
 polynomial_degree=$((discriminant_bound/24))
@@ -134,6 +141,8 @@ input="$folder/$result_name"
 
 
 #6. Generating the polynomial sum H(24k+15)q^k
+date
+
 result_name="h15mod24."
 ./polymult $polynomial_degree $number_of_files $bundle $bound_on_coefficients $result_name $folder   1 0 1 1 1   1 0 3 1 1   1 0 1 1 1   1 1 12 1 1   1 0 4 0 1   1 0 12 0 1   1 0 4 1 1
 
@@ -142,6 +151,8 @@ result_name="h15mod24."
 
 
 #7. Producing the file containing H(8k+7) (0s are recorded for 71 (mod 120) and 119 (mod 120)) and deleting all files containing mod 24 data
+date
+
 ./post-processing/merge $folder $number_of_files 7 8 24
 # result_name="h7mod24."
 # rm "$folder/$result_name"*
@@ -155,6 +166,8 @@ result_name="h15mod24."
 
 
 #8. Generating the polynomial sum H(16k+4)q^k
+date
+
 polynomial_degree=$((discriminant_bound/16))
 
     #8.1 Generating the polynomial 2*sum H(16k+4)q^k
@@ -176,6 +189,8 @@ input+="0"
 
 
 #9. Generating the polynomial sum H(16k+8)q^k
+date
+
 result_name="h8mod16."
 ./polymult $polynomial_degree $number_of_files $bundle $bound_on_coefficients $result_name $folder 1 0 2 0 1   1 0 2 1 1   1 0 2 1 1
 
@@ -184,6 +199,8 @@ result_name="h8mod16."
 
 
 #10. Generating the polynomial sum H(8k+3)q^k
+date
+
 polynomial_degree=$((discriminant_bound/8))
 
     #10.1 Generating the polynomial 3*sum H(8k+3)q^k
@@ -199,3 +216,5 @@ input="$folder/$result_name"
 input="$folder/$result_name"
 input+="0"
 ./post-processing/replace $input 0 1 
+
+date
