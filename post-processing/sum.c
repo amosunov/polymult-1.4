@@ -47,7 +47,8 @@ int main(int argc, char *argv[]) {
 
         FILE *fp[argc - 2];
 
-        for (int j = 1; j < argc - 2; j++) {
+        int j;
+        for (j = 1; j < argc - 2; j++) {
             snprintf(filename, sizeof(filename), "%s%d", argv[j + 2], i);
             fp[j] = fopen(filename, "r");
             if (fp[j] == NULL) {
@@ -91,7 +92,7 @@ int main(int argc, char *argv[]) {
         unsigned int result[BUFSIZE];
 
         while (fread(result, sizeof(unsigned int), BUFSIZE, fp[1]) == BUFSIZE) {
-           for (int j = 2; j < argc - 2; j++) {
+           for (j = 2; j < argc - 2; j++) {
                 fread(buf, sizeof(unsigned int), BUFSIZE, fp[j]);
                 for (int b = 0; b < BUFSIZE; b++) {
                     result[b] += buf[b];
@@ -119,8 +120,14 @@ int main(int argc, char *argv[]) {
             k++;
         }*/
 
-        for (int j = 0; j < argc - 2; j++) {
+        fclose(fp[0]);
+        for (j = 1; j < argc - 2; j++) {
             fclose(fp[j]);
+
+            #ifdef DELETE_INPUT_FILES
+            snprintf(filename, sizeof(filename), "%s%d", argv[j + 2], i);
+            remove(filename);
+            #endif
         }
     }
 

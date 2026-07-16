@@ -20,7 +20,7 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
-    char *path = argv[1];
+    const char *path = argv[1];
     const int number_of_files = atoi(argv[2]);
     const int a = atoi(argv[3]);
     const int small_m = atoi(argv[4]);
@@ -120,8 +120,24 @@ int main(int argc, char *argv[]) {
             fwrite(result, sizeof(unsigned int), total_congruence_classes * BUFSIZE, fp[0]);
         }
 
-        for (j = 0; j <= total_congruence_classes; j++) {
-            fclose(fp[j]);
+        fclose(fp[0]);
+
+        #ifdef DELETE_INPUT_FILES
+        a_var = a;
+        #endif
+        for (j = 1; j <= total_congruence_classes; j++) {
+            if (fp[j] != NULL) {
+                fclose(fp[j]);
+                #ifdef DELETE_INPUT_FILES
+                snprintf(filename, sizeof(filename), "%s/h%dmod%d.%d", path, a_var, big_m, i);
+                remove(filename);
+                #endif
+            }
+            #ifdef DELETE_INPUT_FILES
+            a_var += small_m;
+            #endif
         }
     }
+
+    return 0;
 }

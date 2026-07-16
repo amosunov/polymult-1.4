@@ -1345,4 +1345,13 @@ void multiply(const ulong limit, const uint files, const uint bundle, const ulon
 	free(primes);
 
 	fmpz_comb_clear(comb);
+
+    sprintf(name_f, "%s/%s", folder, "f");
+    rmdir(name_f);
+    
+    sprintf(name_g, "%s/%s", folder, "g");
+    rmdir(name_g);
+
+    sprintf(name_h, "%s/%s", folder, "h");
+    rmdir(name_h);
 }

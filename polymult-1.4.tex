@@ -109,6 +109,8 @@ gcc -fopenmp -lflint main.c init.c mult.c -o polymult
 
 \item In FLINT, the function (or macro?) \code{count_leading_zeros} is now deprecated, so in POLYMULT every occurrence of \code{count_leading_zeros(mod.norm, prime)} had to be replaced with \code{mod.norm = flint_clz(prime)}. There were only 2 occurrences.
 
+\item The subroutine \code{multiply(...)} in \code{mult.c} automatically creates three auxiliary folders where temporary files are being stored. Previously, these folders remained existing (though empty) after subroutine's termination. Now the last 6 lines of the subroutine ensure that they are deleted as well.
+
 \item Added a collection of basic C programs that enable one to post-process class number files resulting from polynomial multiplication. These programs are located in the folder \code{post-processing} and, with the exception of \code{check}, are utilized by \code{tabulate_class_numbers.sh}. They are
 
 \begin{itemize}

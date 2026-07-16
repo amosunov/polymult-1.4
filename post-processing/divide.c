@@ -14,6 +14,7 @@ Compile with clang -fopenmp divide.c -o divide
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <omp.h>
 
 #define BUFSIZE 65536 
@@ -33,6 +34,8 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
+    const int same_input_output_files = (strcmp(argv[2], argv[3]) == 0);
+
     //size_t common_filesize = 0;
 
     // printf("Max threads: %d\n", omp_get_max_threads());
@@ -42,59 +45,89 @@ int main(int argc, char *argv[]) {
         // printf("Thread %d\n", omp_get_thread_num());
         char filename[FILENAME_LENGTH];
         size_t filesize;
+        unsigned int buf[BUFSIZE];
+        size_t total_read;
 
-        FILE *fp_input;
-        FILE *fp_output;
-
-        snprintf(filename, sizeof(filename), "%s%d", argv[3], i);
-        fp_input = fopen(filename, "r");
-        if (fp_input == NULL) {
-            perror(filename);
-            exit(1);
-        }
-        fseek(fp_input, 0, SEEK_END);
-        filesize = ftell(fp_input);
-
-        if (filesize == 0) {
-            perror("File size must exceed 0\n");
-            exit(1);
-        }
-
-        if (filesize % (BUFSIZE * sizeof(unsigned int)) != 0) {
-            perror("Each file size must be divisible by BUFSIZE * sizeof(unsigned int)\n");
-            exit(1);
-        }
-
-        /*if (common_filesize == 0) {
-            common_filesize = filesize;
-        } else {
-            if (filesize != common_filesize) {
-                perror("All files must have exactly the same size\n");
+        if (same_input_output_files) {
+            FILE *fp;
+            snprintf(filename, sizeof(filename), "%s%d", argv[3], i);
+            fp = fopen(filename, "r+b");
+            if (fp == NULL) {
+                perror(filename);
                 exit(1);
             }
-        }*/
 
-        fseek(fp_input, 0, SEEK_SET);
-
-        // Opening the file where we will write the result
-        snprintf(filename, sizeof(filename), "%s%d", argv[2], i);
-        fp_output = fopen(filename, "w");
-        if (fp_output == NULL) {
-            perror(filename);
-            exit(1);
-        }
-
-        unsigned int buf[BUFSIZE];
-
-        while (fread(buf, sizeof(unsigned int), BUFSIZE, fp_input) == BUFSIZE) {
-            for (int b = 0; b < BUFSIZE; b++) {
-                buf[b] /= d;
+            total_read = fread(buf, sizeof(unsigned int), BUFSIZE, fp);
+            while (total_read) {
+                for (int b = 0; b < total_read; b++) {
+                    buf[b] /= d;
+                }
+                fseek(fp, -(long) (total_read * sizeof(unsigned int)), SEEK_CUR);
+                fwrite(buf, sizeof(unsigned int), total_read, fp);
+                total_read = fread(buf, sizeof(unsigned int), BUFSIZE, fp);
             }
-            fwrite(buf, sizeof(unsigned int), BUFSIZE, fp_output);
-        }
 
-        fclose(fp_input);
-        fclose(fp_output);
+            fclose(fp);
+        } else {
+            FILE *fp_input;
+            FILE *fp_output;
+
+            snprintf(filename, sizeof(filename), "%s%d", argv[3], i);
+            fp_input = fopen(filename, "r");
+            if (fp_input == NULL) {
+                perror(filename);
+                exit(1);
+            }
+            /*
+            fseek(fp_input, 0, SEEK_END);
+            filesize = ftell(fp_input);
+
+            if (filesize == 0) {
+                perror("File size must exceed 0\n");
+                exit(1);
+            }
+
+            if (filesize % (BUFSIZE * sizeof(unsigned int)) != 0) {
+                perror("Each file size must be divisible by BUFSIZE * sizeof(unsigned int)\n");
+                exit(1);
+            }
+
+            if (common_filesize == 0) {
+                common_filesize = filesize;
+            } else {
+                if (filesize != common_filesize) {
+                    perror("All files must have exactly the same size\n");
+                    exit(1);
+                }
+            }
+            fseek(fp_input, 0, SEEK_SET);
+            */
+
+            // Opening the file where we will write the result
+            snprintf(filename, sizeof(filename), "%s%d", argv[2], i);
+            fp_output = fopen(filename, "w");
+            if (fp_output == NULL) {
+                perror(filename);
+                exit(1);
+            }
+
+            total_read = fread(buf, sizeof(unsigned int), BUFSIZE, fp_input);
+            while (total_read) {
+                for (int b = 0; b < total_read; b++) {
+                    buf[b] /= d;
+                }
+                fwrite(buf, sizeof(unsigned int), total_read, fp_output);
+                total_read = fread(buf, sizeof(unsigned int), BUFSIZE, fp_input);
+            }
+
+            fclose(fp_input);
+            fclose(fp_output);
+        
+            #ifdef DELETE_INPUT_FILES
+            snprintf(filename, sizeof(filename), "%s%d", argv[3], i);
+            remove(filename);
+            #endif
+        }
     }
 
     return 0;
