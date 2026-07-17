@@ -15,12 +15,12 @@ set -x
 
 
 
-#0. Compile all files
+#0. Compiling all files
 $CC -fopenmp -lflint *.c -L/usr/local/lib -I/usr/local/include -o polymult
 cd post-processing
 $CC -fopenmp -DDELETE_INPUT_FILES sum.c -o sum
 $CC -fopenmp -DDELETE_INPUT_FILES merge.c -o merge
-$CC -fopenmp -DDELETE_INPUT_FILES divide.c -o divide
+$CC -fopenmp -DDELETE_INPUT_FILES scale.c -o scale
 $CC replace.c -o replace
 cd ..
 
@@ -134,7 +134,7 @@ result_name="h7mod24."
     #5.2 Dividing by 2
 output="$folder/$result_name"
 input="$folder/$result_name"
-./post-processing/divide $number_of_files $output $input 2
+./post-processing/scale $number_of_files $output $input divide 2
 
 
 
@@ -177,7 +177,7 @@ result_name="h4mod16."
     #8.2 Dividing by 2
 output="$folder/$result_name"
 input="$folder/$result_name"
-./post-processing/divide $number_of_files $output $input 2
+./post-processing/scale $number_of_files $output $input divide 2
 
     #8.3 Replacing the 0th entry in h4mod16.0 with 1 (because Q(sqrt(-4)) has non-trivial automorphisms)
 input="$folder/$result_name"
@@ -210,7 +210,7 @@ result_name="h3mod8."
     #10.2 Dividing by 3
 output="$folder/$result_name"
 input="$folder/$result_name"
-./post-processing/divide $number_of_files $output $input 3
+./post-processing/scale $number_of_files $output $input divide 3
 
     #10.3 Replacing the 0th entry in h3mod8.0 with 1 (because Q(sqrt(-3)) has non-trivial automorphisms)
 input="$folder/$result_name"

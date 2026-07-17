@@ -1,7 +1,7 @@
 /*
-Takes as input a prefix of input binary files, divides their contents (unsigned integers) by a fixed positive unsigned integer, and saves the resulting values into an output file
+Takes as input a prefix of input binary files, divides or multiplies their contents (unsigned integers) by a fixed positive unsigned integer, and saves the resulting values into an output file
 
-EXAMPLE: ./sum 32 ~/res ~/a 3
+EXAMPLE: ./sum 32 ~/res ~/a divide 3
 
 The input files have names a0, a1, ..., a31
 The output files are called res0, res1, ..., res31
@@ -9,7 +9,7 @@ If we view both files as huge vectors, then res0=(1/3)*a0, res1(1/3)*a1, ..., re
 
 Notice that all files must store binary unsigned int values, have exactly the same nonzero size, and this size must be divisible by BUFSIZE
 
-Compile with clang -fopenmp divide.c -o divide
+Compile with clang -fopenmp scale.c -o scale
 */
 
 #include <stdio.h>
@@ -20,14 +20,18 @@ Compile with clang -fopenmp divide.c -o divide
 #define BUFSIZE 65536 
 #define FILENAME_LENGTH 1024 
 
+#define MULTIPLY 0 
+#define DIVIDE 1
+
 int main(int argc, char *argv[]) {
-    if (argc != 5) {
-        printf("Format: ./divide [number_of_files] [output_file_prefix] [input_file_prefix] [number_to_divide_by]\n");
+    if (argc != 6) {
+        printf("Format: ./divide [number_of_files] [output_file_prefix] [input_file_prefix] [operation] [number_to_multiply_or_divide_by]\n");
         exit(1);
     }
 
     const long number_of_files = atol(argv[1]);
-    const unsigned int d = atoi(argv[4]);
+    const int operation = strcmp(argv[4], "multiply");
+    const unsigned int d = atoi(argv[5]);
 
     if (d == 0) {
         perror("The divisor cannot be 0\n");
@@ -36,17 +40,13 @@ int main(int argc, char *argv[]) {
 
     const int same_input_output_files = (strcmp(argv[2], argv[3]) == 0);
 
-    //size_t common_filesize = 0;
-
-    // printf("Max threads: %d\n", omp_get_max_threads());
-
     #pragma omp parallel for
     for (int i = 0; i < number_of_files; i++) {
-        // printf("Thread %d\n", omp_get_thread_num());
         char filename[FILENAME_LENGTH];
         size_t filesize;
         unsigned int buf[BUFSIZE];
         size_t total_read;
+        int b;
 
         if (same_input_output_files) {
             FILE *fp;
@@ -59,8 +59,14 @@ int main(int argc, char *argv[]) {
 
             total_read = fread(buf, sizeof(unsigned int), BUFSIZE, fp);
             while (total_read) {
-                for (int b = 0; b < total_read; b++) {
-                    buf[b] /= d;
+                if (operation == DIVIDE) {
+                    for (b = 0; b < total_read; b++) {
+                        buf[b] /= d;
+                    }
+                } else { // otherwise multiply
+                    for (b = 0; b < total_read; b++) {
+                        buf[b] *= d;
+                    }
                 }
                 fseek(fp, -(long) (total_read * sizeof(unsigned int)), SEEK_CUR);
                 fwrite(buf, sizeof(unsigned int), total_read, fp);
@@ -78,30 +84,6 @@ int main(int argc, char *argv[]) {
                 perror(filename);
                 exit(1);
             }
-            /*
-            fseek(fp_input, 0, SEEK_END);
-            filesize = ftell(fp_input);
-
-            if (filesize == 0) {
-                perror("File size must exceed 0\n");
-                exit(1);
-            }
-
-            if (filesize % (BUFSIZE * sizeof(unsigned int)) != 0) {
-                perror("Each file size must be divisible by BUFSIZE * sizeof(unsigned int)\n");
-                exit(1);
-            }
-
-            if (common_filesize == 0) {
-                common_filesize = filesize;
-            } else {
-                if (filesize != common_filesize) {
-                    perror("All files must have exactly the same size\n");
-                    exit(1);
-                }
-            }
-            fseek(fp_input, 0, SEEK_SET);
-            */
 
             // Opening the file where we will write the result
             snprintf(filename, sizeof(filename), "%s%d", argv[2], i);
@@ -113,8 +95,14 @@ int main(int argc, char *argv[]) {
 
             total_read = fread(buf, sizeof(unsigned int), BUFSIZE, fp_input);
             while (total_read) {
-                for (int b = 0; b < total_read; b++) {
-                    buf[b] /= d;
+                if (operation == DIVIDE) {
+                    for (b = 0; b < total_read; b++) {
+                        buf[b] /= d;
+                    }
+                } else { // otherwise multiply
+                    for (b = 0; b < total_read; b++) {
+                        buf[b] *= d;
+                    }
                 }
                 fwrite(buf, sizeof(unsigned int), total_read, fp_output);
                 total_read = fread(buf, sizeof(unsigned int), BUFSIZE, fp_input);
