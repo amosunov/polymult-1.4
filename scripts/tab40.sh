@@ -4,11 +4,11 @@ CC="clang"
 
 folder="/Users/antonmosunov/Desktop/test"
 # Make sure that discriminant_bound is divisible by 15
-discriminant_bound=$((15 * 2**28))
-number_of_files=$((2**3))
+discriminant_bound=$((15 * 2**40))
+number_of_files=$((2**13))
 # Bitsize values in order: 23, 47, 95 mod 120,   7, 15 mod 24,   4, 8 mod 16,   3 mod 8
-bitsize_values=(20 20 20 21 20 20 19 22)
-degree_after_bundling=$((2**17))
+bitsize_values=(27 27 27 28 27 27 26 29)
+degree_after_bundling=$((2**26))
 degree_values=(
     $((discriminant_bound / 120))
     $((discriminant_bound / 120))
