@@ -19,7 +19,7 @@
 =============================================================================*/
 /******************************************************************************
 
-    Copyright (C) 2026 Anton Mosunov
+    Copyright (C) 2021 Anton Mosunov
  
 ******************************************************************************/
 
@@ -37,14 +37,11 @@
 #define ulong unsigned long
 #endif
 
-#define SIZE 100
-#define LOWER_BOUND 0
-
 int main(int argc, char * argv[])
 {
-	if ((argc < 22) || (argc % 10 != 2))
+	if ((argc < 22) || (argc % 5 != 2))
 	{
-		printf("Format: ./polymult [polynomial_degree] [number_of_files] [bundle] [bound] [resultname] [folder] [c0] [r0] [s0] [a0] [m0] [c1] [r1] [s1] [a1] [m1] ...\n");
+		printf("Format: ./polymult [degree] [files] [bundle] [bitsize] [resultname] [folder] [c0] [r0] [s0] [a0] [m0] [c1] [r1] [s1] [a1] [m1] ...\n");
 		exit(1);
 	}
 
@@ -66,9 +63,14 @@ int main(int argc, char * argv[])
 	const ulong limit = atol(argv[1]);
 	const uint files = atoi(argv[2]);
 	const uint bundle = atoi(argv[3]);
-	const ulong bound = atol(argv[4]);
+	const uint bitsize = atoi(argv[4]);
 	const char * resultname = argv[5];
 	const char * folder = argv[6];
+
+    if (limit % (files * bundle) != 0) {
+        perror("The degree of the polynomial must be divisible by number_of_files * bundling_parameter\n");
+        exit(1);
+    }
 
 	if ((limit / (files * bundle)) % (getpagesize() / (sizeof(ulong))) != 0)
 	{

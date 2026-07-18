@@ -19,7 +19,7 @@
 =============================================================================*/
 /******************************************************************************
 
-    Copyright (C) 2026 Anton Mosunov
+    Copyright (C) 2021 Anton Mosunov
  
 ******************************************************************************/
 
@@ -38,13 +38,33 @@
 
 #include "init.h"
 
+// Block-by-block initialization
 
 
+// returns floor(sqrt(x))
+// the code is taken from https://dox.ipxe.org/isqrt_8c.html
+ulong isqrt(ulong value) {
+         ulong result = 0;
+         ulong bit = ( 1UL << ( ( 8 * sizeof ( bit ) ) - 2 ) );
+ 
+         while ( bit > value )
+                 bit >>= 2;
+         while ( bit ) {
+                 if ( value >= ( result + bit ) ) {
+                         value -= ( result + bit );
+                         result = ( ( result >> 1 ) + bit );
+                 } else {
+                         result >>= 1;
+                 }
+                 bit >>= 2;
+         }
+         return result;
+ }
 
 
 // returns ceil(sqrt(a/b))
 // assumes that b is not zero
-static ulong ceilsqrt(ulong a, ulong b)
+ulong ceilsqrt(ulong a, ulong b)
 {
     if (a == 0)
         return 0;
@@ -66,9 +86,22 @@ static ulong ceilsqrt(ulong a, ulong b)
     return lo;
 }
 
+/*
+// returns ceil(sqrt(a/b))
+static ulong ceilsqrt(ulong a, ulong b)
+{
+	ulong q = (a / b);
+	ulong r = a - (q * b);
+	ulong s = isqrt(q);
+	if (r == 0 && (s * s) == q)
+	{
+		return(s);
+	}
+	return(s + 1);
+}
+*/
 
-
-
+#include <limits.h>
 
 // returns the smallest x ≡ a (mod m) such that x >= min 
 // assumes that m is positive
@@ -88,14 +121,9 @@ static ulong smallest_a_mod_m(const long a, const ulong m, const ulong min)
     return r + k * m;
 }
 
-
-
-
-
 /*
-* Initializes a block of coefficients of c*(q^r)*nabla_{a, m}(q^s) in the range [min, min + size)
-* IMPORTANT: if m = 1 and a = 1, initializes (1/2)*c*(q^r)*nabla_{1, 1}(q^s), as opposed to c*(q^r)*nabla_{1, 1}(q^s)
-* Must have gcd(a,m)=1, 0<=a<=m, and s*k*(m*k+a)/2 a non-zero integer for every integer k in order to work properly
+* Initializes a block of coefficients of c*(q^r)*nabla_{a, m}(q^s) in the range [min, min + size).
+* IMPORTANT: if m = 1 and a = 1, we are initializing c*(1/2)*(q^r)*nabla_{1, 1}(q^s), as opposed to c*(q^r)*nabla_{1, 1}(q^s).
 */
 void init_block_nabla(int * block, const ulong size, const ulong min, const ulong c, const ulong r, const ulong s, const ulong a, const ulong m)
 {
@@ -151,12 +179,7 @@ void init_block_nabla(int * block, const ulong size, const ulong min, const ulon
 	}
 }
 
-
-/*
-* Initializes a block of coefficients of c1*(q^r1)*nabla_{a1, m1}(q^s1) x c2*(q^r2)*nabla_{a2, m2}(q^s2) in the range [min, min + size)
-* IMPORTANT: if m = 1 and a = 1, initializes (1/2)*c*(q^r)*nabla_{1, 1}(q^s), as opposed to c*(q^r)*nabla_{1, 1}(q^s)
-* Must have gcd(a1,m1)=1, gcd(a2,m2)=1, 0<=a1<=m1, 0<=2<=m2, and s*k*(m*k+a)/2 a non-negative integer for every integer k in order to work properly
-*/
+// Must have gcd(a1,m1)=1 and gcd(a2,m2)=1 in order to work properly
 void init_block_nabla_product(int * block, const ulong size, const ulong min, const ulong c1, const ulong r1, const ulong s1, const ulong a1, const ulong m1, const ulong c2, const ulong r2, const ulong s2, const ulong a2, const ulong m2) {
     const int c = (int) (c1 * c2);
 
@@ -200,9 +223,9 @@ void init_block_nabla_product(int * block, const ulong size, const ulong min, co
             #ifdef DEBUG
             printf("tr1=%lu, tr2=%lu\n", (s1*(square1 - a1*a1))/(8*m1),  (s2*(square2 - a2*a2))/(8*m2)) ;
             printf("\tsquare1=%lu, square2=%lu, index=%lu\n", square1, square2, index);
-            square2 += 4*m2*((2*k2+1)*m2 + a2);
             #endif
             block[index] += c;
+            square2 += 4*m2*((2*k2+1)*m2 + a2);
             index += (s2*((2*k2+1)*m2+a2))/2;
             k2++;
         }
@@ -223,9 +246,9 @@ void init_block_nabla_product(int * block, const ulong size, const ulong min, co
                 #ifdef DEBUG
                 printf("tr1=%lu, tr2=%lu\n", (s1*(square1 - a1*a1))/(8*m1),  (s2*(square2 - b2*b2))/(8*m2)) ;
                 printf("\tsquare1=%lu, square2=%lu, index=%lu\n", square1, square2, index);
-                square2 += 4*m2*((2*k2+1)*m2 - (-b2));
                 #endif
                 block[index] += c;
+                square2 += 4*m2*((2*k2+1)*m2 - (-b2));
                 index += (s2*((2*k2+1)*m2-(-b2)))/2;
                 k2++;
             }
@@ -257,9 +280,10 @@ void init_block_nabla_product(int * block, const ulong size, const ulong min, co
             #ifdef DEBUG
             printf("tr1=%lu, tr2=%lu\n", (s1*(square1 - b1*b1))/(8*m1),  (s2*(square2 - a2*a2))/(8*m2)) ;
             printf("\tsquare1=%lu, square2=%lu, index=%lu\n", square1, square2, index);
-            square2 += 4*m2*((2*k2+1)*m2 + a2);
             #endif
+
             block[index] += c;
+            square2 += 4*m2*((2*k2+1)*m2 + a2);
             index += (s2*((2*k2+1)*m2+a2))/2;
             k2++;
         }
@@ -280,9 +304,9 @@ void init_block_nabla_product(int * block, const ulong size, const ulong min, co
                 #ifdef DEBUG
                 printf("tr1=%lu, tr2=%lu\n", (s1*(square1 - b1*b1))/(8*m1),  (s2*(square2 - b2*b2))/(8*m2)) ;
                 printf("\tsquare1=%lu, square2=%lu, index=%lu\n", square1, square2, index);
-                square2 += 4*m2*((2*k2+1)*m2 - (-b2));
                 #endif
                 block[index] += c;
+                square2 += 4*m2*((2*k2+1)*m2 - (-b2));
                 index += (s2*((2*k2+1)*m2-(-b2)))/2;
                 k2++;
             }

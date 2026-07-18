@@ -19,7 +19,7 @@
 =============================================================================*/
 /******************************************************************************
 
-    Copyright (C) 2026 Anton Mosunov
+    Copyright (C) 2016 Anton Mosunov
  
 ******************************************************************************/
 
@@ -91,8 +91,5 @@ void restore_coeff(const ulong * primes, const uint total_primes,
 		const ulong limit, const uint files, const uint bundle, const uint bitsize, const int mod,
 		const char * resultname, const char * name1, const int flags);
 
-//void multiply(const ulong limit, const uint files, const uint bundle, const ulong bound,
-//		const char * resultname, const char * folder, const char type1, const char type2);
-
-void multiply(const ulong limit, const uint files, const uint bundle, const ulong bound,
+void multiply(const ulong limit, const uint files, const uint bundle, const uint bitsize,
 		const char * resultname, const char * folder, const uint series_total, const ulong * series_params);

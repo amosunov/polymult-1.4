@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
     }
 
     const long number_of_files = atol(argv[1]);
-    const int operation = strcmp(argv[4], "multiply");
+    const int operation = (strcmp(argv[4], "divide") == 0);
     const unsigned int d = atoi(argv[5]);
 
     if (d == 0) {

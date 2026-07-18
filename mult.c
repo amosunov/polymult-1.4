@@ -19,7 +19,7 @@
 =============================================================================*/
 /******************************************************************************
 
-    Copyright (C) 2026 Anton Mosunov
+    Copyright (C) 2021 Anton Mosunov
  
 ******************************************************************************/
 
@@ -1244,7 +1244,7 @@ void restore_coeff(	const ulong * primes, const uint total_primes,
 }
 
 
-void multiply(const ulong limit, const uint files, const uint bundle, const ulong bound,
+void multiply(const ulong limit, const uint files, const uint bundle, const uint bitsize,
 		const char * resultname, const char * folder, const uint series_total, const ulong * series_params)
 {
 	ulong exec_time;
@@ -1259,7 +1259,7 @@ void multiply(const ulong limit, const uint files, const uint bundle, const ulon
 
 	int mod = 0;
 
-	uint bitsize = (log2(bound) + 1);
+	// uint bitsize = (log2(bound) + 1);
 	uint output_bits = bitsize * ((bundle << 1) - 1);
 
 	uint total_primes = (uint) ceil((output_bits - 1) / log2(p0));
@@ -1273,7 +1273,7 @@ void multiply(const ulong limit, const uint files, const uint bundle, const ulon
 
 	fmpz_comb_init(comb, primes, total_primes);
 
-	printf("Limit: %lu\nFiles: %u\nBundle: %u\nBound: %lu\nBitsize: %u\nTotal primes: %u\n", limit, files, bundle, bound, bitsize, total_primes);
+	printf("Degree: %lu\nFiles: %u\nBundle: %u\nBitsize: %u\nTotal primes: %u\n", limit, files, bundle, bitsize, total_primes);
 
 	char name_f[160];
 	sprintf(name_f, "%s/%s", folder, "f");
@@ -1345,7 +1345,7 @@ void multiply(const ulong limit, const uint files, const uint bundle, const ulon
 	free(primes);
 
 	fmpz_comb_clear(comb);
-
+	
     sprintf(name_f, "%s/%s", folder, "f");
     rmdir(name_f);
     

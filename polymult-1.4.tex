@@ -105,6 +105,8 @@ gcc -fopenmp -lflint main.c init.c mult.c -o polymult
 
 \item Included a bash script \code{tabulate_class_numbers.sh} that tabulates class numbers using the formulas from both \cite{mosunov} and \cite{bringmann-kane}. \textbf{If you don't want to think hard about how to tabulate class numbers, all you need is to run this script}. Modify the parameters in the script according to your system's configurations. In order for the script to work properly, make sure that the value of \code{discriminant_bound} is divisible by $15 \cdot 2^{27}$.
 
+\item Instead of accepting an upper \code{bound} on the size of the coefficients, the executable \code{polymult} is now accepting the size of that upper bound in bits (a.k.a. \code{bitsize}).
+
 \item POLYMULT can now multiply many more series. However, the functionality for dividing one series by the other has been removed, because it was far too impractical.
 
 \item In FLINT, the function (or macro?) \code{count_leading_zeros} is now deprecated, so in POLYMULT every occurrence of \code{count_leading_zeros(mod.norm, prime)} had to be replaced with \code{mod.norm = flint_clz(prime)}. There were only 2 occurrences.
@@ -451,11 +453,11 @@ Restores \code{limit} coefficients from a \textbf{Type 3} collection of \code{fi
 
 \begin{lstlisting}
 void multiply(const ulong limit, const uint files, const uint bundle,
-	      const uint bound, const char * resultname, const char * folder,
+	      const uint bitsize, const char * resultname, const char * folder,
 	      const char type1, const char type2)
 \end{lstlisting}
 
-Performs the out-of-core multiplication of two polynomials of types \code{type1} and \code{type2}. The result is saved into \textbf{Type 1} collection of \texttt{files} binary files with a prefix \code{resultname} in a folder \code{folder}. The number of coefficients of both polynomials is \code{limit}, and the upper bound on the coefficients of the resulting polynomial is \code{bound}. The bundling parameter is \code{bundle}.
+Performs the out-of-core multiplication of two polynomials of types \code{type1} and \code{type2}. The result is saved into \textbf{Type 1} collection of \texttt{files} binary files with a prefix \code{resultname} in a folder \code{folder}. The number of coefficients of both polynomials is \code{limit}, and the bit size of the upper bound on the coefficients of the resulting polynomial is \code{bitsize}. The bundling parameter is \code{bundle}.
 
 
 
@@ -541,7 +543,7 @@ $$
 The \code{polymult} executable admits at least 21 parameters. If the total number of parameters is less than 21 or it is not equal to 1 modulo 10, the following prompt comes out:
 
 \begin{lstlisting}
-./polymult [poly_degree] [number_of_files] [bundle] [bound] [resultname] [folder]
+./polymult [poly_degree] [number_of_files] [bundle] [bitsize] [resultname] [folder]
 [c0] [r0] [s0] [a0] [m0] [c1] [r1] [s1] [a1] [m1] ...
 \end{lstlisting}
 
