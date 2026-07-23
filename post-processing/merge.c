@@ -38,7 +38,9 @@ int main(int argc, char *argv[]) {
 
     const int total_congruence_classes = big_m/small_m;
 
+    #ifdef DEBUG
     long number_of_discs_per_file = 0;
+    #endif
 
     #pragma omp parallel for
     for (int i = 0; i < number_of_files; i++) {
@@ -54,6 +56,7 @@ int main(int argc, char *argv[]) {
             #endif
             fp[j] = fopen(filename, "r");
             a_var += small_m;
+            #ifdef DEBUG
             if (fp[j] != NULL) {
                 #pragma omp critical
                 {
@@ -64,10 +67,12 @@ int main(int argc, char *argv[]) {
                     }
                 }
             }
+            #endif
         }
-        number_of_discs_per_file /= sizeof(unsigned int);
 
         #ifdef DEBUG
+        number_of_discs_per_file /= sizeof(unsigned int);
+
         printf("There are %ld discriminants per file\n", number_of_discs_per_file);
         #endif
 
@@ -86,9 +91,9 @@ int main(int argc, char *argv[]) {
         #endif
 
         for (j = 1; j <= total_congruence_classes; j++) {
-            if (fp[j] != NULL) {
+            // if (fp[j] != NULL) {
                 memset(buf[j], 0, BUFSIZE * sizeof(unsigned int));
-            }
+            // }
         }
 
         while (1) {
@@ -96,9 +101,9 @@ int main(int argc, char *argv[]) {
             for (j = 1; j <= total_congruence_classes; j++) {
                 if (fp[j] != NULL) {
                     total_read += fread(buf[j], sizeof(unsigned int), BUFSIZE, fp[j]);
-                } else {
-                    memset(buf[j], 0, BUFSIZE * sizeof(unsigned int));
-                }
+                } // else {
+                //    memset(buf[j], 0, BUFSIZE * sizeof(unsigned int));
+                // }
             }
 
             if (total_read == 0) break;
